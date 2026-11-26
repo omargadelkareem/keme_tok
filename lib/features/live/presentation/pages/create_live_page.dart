@@ -64,7 +64,7 @@ class _CreateLivePageState extends State<CreateLivePage> {
             builder: (_) => LiveRoomPage(room: LiveRoomData(
               'أنت', name.isEmpty ? 'لايف جديد' : name, '0', 'تجريبي',
               const Color(0xFF623269), paid: paid))));
-        }),
+        },
       ),
       const SizedBox(height: 12),
       const Text('لا يتم تشغيل الكاميرا أو تحصيل أي مبالغ في هذه المرحلة.',
