@@ -65,13 +65,13 @@ class _ProfilePageState extends State<ProfilePage> {
             future: SessionService.getPhone(),
             builder: (context, snap) => Text(snap.data ?? '@me',
               style: const TextStyle(color: AppColors.textSecondary))),
-          if (!own) Text(creator.handle,
+          if (creator != null) Text(creator.handle,
             style: const TextStyle(color: AppColors.textSecondary)),
           const SizedBox(height: 23),
           Row(mainAxisAlignment: MainAxisAlignment.center, children: [
             _stat(own ? creators.followingCount() : 0, 'المتابَعون'),
-            _stat(own ? 0 : creator.followers + (followed ? 1 : 0), 'المتابعون'),
-            _stat(own ? mine.fold<int>(0, (sum, v) => sum + v.likes) : creator.likes, 'الإعجابات'),
+            _stat(own ? 0 : (creator?.followers ?? 0) + (followed ? 1 : 0), 'المتابعون'),
+            _stat(own ? mine.fold<int>(0, (sum, v) => sum + v.likes) : (creator?.likes ?? 0), 'الإعجابات'),
           ]),
           const SizedBox(height: 20),
           Padding(padding: const EdgeInsets.symmetric(horizontal: 22),
@@ -84,7 +84,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 onPressed: own
                   ? () => ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('تعديل بيانات الحساب بعد الربط الحقيقي')))
-                  : () => creators.toggle(creator.id),
+                  : () { if (creator != null) creators.toggle(creator.id); },
                 style: FilledButton.styleFrom(
                   backgroundColor: followed ? AppColors.surface : AppColors.pink,
                   padding: const EdgeInsets.symmetric(vertical: 13)),
