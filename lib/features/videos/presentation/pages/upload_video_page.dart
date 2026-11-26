@@ -39,6 +39,13 @@ class _UploadVideoPageState extends State<UploadVideoPage> {
     if (sourcePath == null || saving) return;
     setState(() => saving = true);
     try {
+      // Release the preview decoder before opening the reels feed.
+      final previous = player;
+      if (previous != null) {
+        await previous.pause();
+        setState(() => player = null);
+        await previous.dispose();
+      }
       await LocalVideoStore.instance.publish(sourcePath!, caption.text.trim());
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -50,7 +57,7 @@ class _UploadVideoPageState extends State<UploadVideoPage> {
   }
 
   @override
-  void dispose() { player?.dispose(); caption.dispose(); super.dispose(); }
+  void dispose() { final current = player; player = null; current?.dispose(); caption.dispose(); super.dispose(); }
 
   @override
   Widget build(BuildContext context) => Scaffold(
