@@ -64,7 +64,7 @@ class LocalVideoStore extends ChangeNotifier {
 
   Future<void> toggleLike(String id) async {
     _videos = _videos.map((v) => v.id == id
-      ? v.copyWith(liked: !v.liked, likes: (v.likes + (v.liked ? -1 : 1)).clamp(0, 999999))
+      ? v.copyWith(liked: !v.liked, likes: (v.likes + (v.liked ? -1 : 1)).clamp(0, 999999).toInt())
       : v).toList();
     await _save();
   }
