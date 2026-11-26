@@ -125,7 +125,7 @@ class _CreateLivePageState extends State<CreateLivePage> {
           icon: const Icon(Icons.camera_front), label: const Text('تجربة الكاميرا قبل اللايف')),
         const SizedBox(height: 12),
         const Text(
-          'لا يتم تشغيل الكاميرا أو تحصيل أي مبالغ في هذه المرحلة.',
+          'يمكن تجربة الكاميرا محليًا، لكن البث للمشاهدين والدفع غير مفعّلين بعد.',
           textAlign: TextAlign.center,
           style: TextStyle(
             color: AppColors.textSecondary,
