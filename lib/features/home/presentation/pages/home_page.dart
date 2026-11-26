@@ -6,6 +6,8 @@ import '../../../videos/presentation/pages/videos_page.dart';
 import '../../../live/presentation/pages/live_list_page.dart';
 import '../../../live/presentation/pages/live_room_page.dart';
 import '../../../live/presentation/pages/create_live_page.dart';
+import '../../../videos/presentation/pages/upload_video_page.dart';
+import '../../../videos/data/local_video_store.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -43,7 +45,7 @@ class _HomePageState extends State<HomePage> {
               _discoverHome(),
               VideosPage(isActive: _selectedIndex == 1),
               const LiveListPage(),
-              const CreateLivePage(),
+              _createSection(),
               _profileSection(),
             ],
           ),
@@ -347,34 +349,80 @@ class _HomePageState extends State<HomePage> {
         ),
       );
 
-  Widget _profileSection() => FutureBuilder<String?>(
-        future: SessionService.getPhone(),
-        builder: (context, snapshot) => Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const CircleAvatar(
-                  radius: 44,
-                  backgroundColor: AppColors.surface,
-                  child: Icon(Icons.person_rounded, size: 49, color: AppColors.cyan),
-                ),
-                const SizedBox(height: 16),
-                const Text('حسابي', style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
-                Text(snapshot.data ?? '', style: const TextStyle(color: AppColors.textSecondary)),
-                const SizedBox(height: 25),
-                OutlinedButton.icon(
-                  onPressed: _logout,
-                  icon: const Icon(Icons.logout),
-                  label: const Text('تسجيل الخروج'),
-                ),
-              ],
-            ),
-          ),
+  Widget _createSection() => ListView(
+    padding: const EdgeInsets.all(20),
+    children: [
+      const SizedBox(height: 16),
+      const Text('أنشئ محتوى', style: TextStyle(fontSize: 27, fontWeight: FontWeight.bold)),
+      const SizedBox(height: 20),
+      Card(child: ListTile(
+        leading: const Icon(Icons.video_library, color: AppColors.pink, size: 34),
+        title: const Text('انشر ريلز جديد'),
+        subtitle: const Text('اختار فيديو من المعرض وانشره على جهازك'),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () async {
+          final published = await Navigator.of(context).push<bool>(
+            MaterialPageRoute(builder: (_) => const UploadVideoPage()));
+          if (published == true && mounted) setState(() => _selectedIndex = 1);
+        },
+      )),
+      const SizedBox(height: 12),
+      const Text('البث المباشر', style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold)),
+      const SizedBox(height: 10),
+      const SizedBox(height: 520, child: CreateLivePage()),
+    ],
+  );
+
+  Widget _profileSection() => AnimatedBuilder(
+    animation: LocalVideoStore.instance,
+    builder: (context, _) {
+      final videos = LocalVideoStore.instance.videos;
+      return ListView(padding: const EdgeInsets.all(20), children: [
+        const SizedBox(height: 14),
+        const Center(child: CircleAvatar(radius: 42,
+          backgroundColor: AppColors.surface,
+          child: Icon(Icons.person, color: AppColors.cyan, size: 45))),
+        const SizedBox(height: 12),
+        const Center(child: Text('حسابي', style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold))),
+        FutureBuilder<String?>(
+          future: SessionService.getPhone(),
+          builder: (context, snapshot) => Center(child: Text(snapshot.data ?? '',
+            style: const TextStyle(color: AppColors.textSecondary))),
         ),
-      );
+        const SizedBox(height: 20),
+        Center(child: Text('فيديوهاتي: ${videos.length}',
+          style: const TextStyle(fontWeight: FontWeight.bold))),
+        const SizedBox(height: 18),
+        if (videos.isEmpty) const Center(child: Text('لسه ما نشرتش فيديوهات')),
+        for (final video in videos)
+          Card(child: ListTile(
+            leading: const Icon(Icons.play_circle, color: AppColors.pink, size: 36),
+            title: Text(video.caption.isEmpty ? 'فيديو بدون وصف' : video.caption,
+              maxLines: 1, overflow: TextOverflow.ellipsis),
+            subtitle: Text('❤️ ${video.likes}    💬 ${video.comments.length}'),
+            onTap: () => setState(() => _selectedIndex = 1),
+            trailing: IconButton(icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+              onPressed: () async {
+                final confirmed = await showDialog<bool>(context: context,
+                  builder: (dialogContext) => AlertDialog(
+                    title: const Text('حذف الفيديو؟'),
+                    content: const Text('هيتم حذف الفيديو من مساحة التطبيق نهائيًا.'),
+                    actions: [
+                      TextButton(onPressed: () => Navigator.pop(dialogContext, false),
+                        child: const Text('إلغاء')),
+                      TextButton(onPressed: () => Navigator.pop(dialogContext, true),
+                        child: const Text('حذف')),
+                    ],
+                  ));
+                if (confirmed == true) await LocalVideoStore.instance.delete(video.id);
+              }),
+          )),
+        const SizedBox(height: 20),
+        OutlinedButton.icon(onPressed: _logout,
+          icon: const Icon(Icons.logout), label: const Text('تسجيل الخروج')),
+      ]);
+    },
+  );
 
   void _showComingSoon(String title) {
     ScaffoldMessenger.of(context).showSnackBar(
