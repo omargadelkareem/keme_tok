@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/services/session_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../auth/presentation/pages/login_page.dart';
+import '../../../videos/presentation/pages/videos_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -37,8 +38,7 @@ class _HomePageState extends State<HomePage> {
             index: _selectedIndex,
             children: [
               _discoverHome(),
-              _emptySection(Icons.play_circle_fill_rounded, 'الفيديوهات القصيرة',
-                  'هنا هنعرض فيديوهات المبدعين في Feed مستقل'),
+              VideosPage(isActive: _selectedIndex == 1),
               _emptySection(Icons.live_tv_rounded, 'البث المباشر',
                   'لايفات مجانية وحصرية في مكان واحد'),
               _emptySection(Icons.add_circle_rounded, 'أنشئ محتوى',
