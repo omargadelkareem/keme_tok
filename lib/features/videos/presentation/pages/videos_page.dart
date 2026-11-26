@@ -115,6 +115,7 @@ class _ReelSlide extends StatefulWidget {
 class _ReelSlideState extends State<_ReelSlide> {
   late final VideoPlayerController player;
   bool ready = false, failed = false;
+  String? failureDetails;
   @override
   void initState() {
     super.initState();
@@ -129,7 +130,15 @@ class _ReelSlideState extends State<_ReelSlide> {
       if (!mounted) return;
       setState(() => ready = true);
       sync();
-    } catch (_) { if (mounted) setState(() => failed = true); }
+    } catch (e) {
+      if (mounted) setState(() {
+        failed = true;
+        failureDetails = File(widget.video.path).existsSync()
+          ? 'صيغة الفيديو غير مدعومة أو تعذر تهيئة المشغل: $e'
+          : 'ملف الفيديو غير موجود على الجهاز: ${widget.video.path}';
+      });
+      debugPrint('KemeTok reel playback failed: $e; path=${widget.video.path}');
+    }
   }
   void sync() {
     if (!ready) return;
@@ -153,7 +162,15 @@ class _ReelSlideState extends State<_ReelSlide> {
       child: Center(child: AspectRatio(aspectRatio: player.value.aspectRatio,
         child: VideoPlayer(player))),
     ) else Center(child: failed
-      ? const Text('تعذر تشغيل الملف المحلي') : const CircularProgressIndicator()),
+      ? Padding(padding: const EdgeInsets.all(22), child: Column(
+          mainAxisSize: MainAxisSize.min, children: [
+            const Icon(Icons.error_outline, color: Colors.orangeAccent, size: 42),
+            const SizedBox(height: 12),
+            const Text('تعذر تشغيل الفيديو', style: TextStyle(fontSize: 18)),
+            const SizedBox(height: 8),
+            Text(failureDetails ?? 'حدث خطأ غير معروف', textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 12, color: Colors.white70)),
+          ])) : const CircularProgressIndicator()),
     const IgnorePointer(child: DecoratedBox(decoration: BoxDecoration(
       gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter,
         colors: [Colors.transparent, Color(0xBB000000)])))),
