@@ -18,9 +18,9 @@ class _UploadVideoPageState extends State<UploadVideoPage> {
   bool saving = false;
   String? error;
 
-  Future<void> pick() async {
+  Future<void> pick({ImageSource source = ImageSource.gallery}) async {
     try {
-      final selected = await ImagePicker().pickVideo(source: ImageSource.gallery);
+      final selected = await ImagePicker().pickVideo(source: source, maxDuration: const Duration(minutes: 5));
       if (selected == null) return;
       final next = VideoPlayerController.file(File(selected.path));
       await next.initialize();
@@ -57,7 +57,7 @@ class _UploadVideoPageState extends State<UploadVideoPage> {
     appBar: AppBar(title: const Text('نشر فيديو جديد')),
     body: ListView(padding: const EdgeInsets.all(20), children: [
       InkWell(
-        onTap: saving ? null : pick,
+        onTap: saving ? null : () => pick(),
         child: Container(
           height: 300,
           clipBehavior: Clip.antiAlias,
@@ -73,8 +73,11 @@ class _UploadVideoPageState extends State<UploadVideoPage> {
         ),
       ),
       const SizedBox(height: 15),
-      OutlinedButton.icon(onPressed: saving ? null : pick,
+      OutlinedButton.icon(onPressed: saving ? null : () => pick(),
         icon: const Icon(Icons.folder_open), label: const Text('اختيار / تغيير الفيديو')),
+      const SizedBox(height: 10),
+      FilledButton.icon(onPressed: saving ? null : () => pick(source: ImageSource.camera),
+        icon: const Icon(Icons.videocam), label: const Text('تصوير فيديو بالكاميرا')),
       const SizedBox(height: 20),
       TextField(controller: caption, maxLength: 220, maxLines: 3,
         decoration: const InputDecoration(labelText: 'وصف الفيديو',
