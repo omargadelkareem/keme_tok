@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import 'live_room_page.dart';
+import 'live_camera_preview_page.dart';
 
 class CreateLivePage extends StatefulWidget {
   const CreateLivePage({super.key});
@@ -117,6 +118,11 @@ class _CreateLivePageState extends State<CreateLivePage> {
           icon: const Icon(Icons.videocam),
           label: const Text('معاينة غرفة اللايف'),
         ),
+        const SizedBox(height: 12),
+        OutlinedButton.icon(onPressed: () => Navigator.of(context).push(
+          MaterialPageRoute<void>(builder: (_) => LiveCameraPreviewPage(
+            title: _titleController.text.trim().isEmpty ? 'لايف جديد' : _titleController.text.trim()))),
+          icon: const Icon(Icons.camera_front), label: const Text('تجربة الكاميرا قبل اللايف')),
         const SizedBox(height: 12),
         const Text(
           'لا يتم تشغيل الكاميرا أو تحصيل أي مبالغ في هذه المرحلة.',
