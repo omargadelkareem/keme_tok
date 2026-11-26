@@ -3,6 +3,9 @@ import '../../../../core/services/session_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../auth/presentation/pages/login_page.dart';
 import '../../../videos/presentation/pages/videos_page.dart';
+import '../../../live/presentation/pages/live_list_page.dart';
+import '../../../live/presentation/pages/live_room_page.dart';
+import '../../../live/presentation/pages/create_live_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -39,10 +42,8 @@ class _HomePageState extends State<HomePage> {
             children: [
               _discoverHome(),
               VideosPage(isActive: _selectedIndex == 1),
-              _emptySection(Icons.live_tv_rounded, 'البث المباشر',
-                  'لايفات مجانية وحصرية في مكان واحد'),
-              _emptySection(Icons.add_circle_rounded, 'أنشئ محتوى',
-                  'قريبًا: تصوير فيديو أو بدء بث مباشر'),
+              const LiveListPage(),
+              const CreateLivePage(),
               _profileSection(),
             ],
           ),
@@ -266,7 +267,9 @@ class _HomePageState extends State<HomePage> {
 
   Widget _liveCard(String title, String creator, String viewers, Color color) =>
       GestureDetector(
-        onTap: () => _showComingSoon('غرفة اللايف'),
+        onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(
+          builder: (_) => LiveRoomPage(room: LiveRoomData(
+            creator, title, viewers, 'لايف', color)))),
         child: Container(
           width: 154,
           margin: const EdgeInsets.only(right: 12),
