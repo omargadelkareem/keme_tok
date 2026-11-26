@@ -70,7 +70,7 @@ class _VideosPageState extends State<VideosPage> {
   }
 
   void _comments(LocalVideo video) {
-    final controller = TextEditingController();
+    String draft = '';
     showModalBottomSheet<void>(context: context, isScrollControlled: true,
       backgroundColor: AppColors.surface,
       builder: (sheetContext) => Padding(
@@ -85,10 +85,12 @@ class _VideosPageState extends State<VideosPage> {
                 ListTile(leading: const Icon(Icons.account_circle), title: Text(comment)),
             ])),
             Row(children: [
-              Expanded(child: TextField(controller: controller,
+              Expanded(child: TextField(
+                onChanged: (value) => draft = value,
+                textInputAction: TextInputAction.send,
                 decoration: const InputDecoration(hintText: 'اكتب تعليق...'))),
               IconButton(onPressed: () async {
-                final text = controller.text.trim();
+                final text = draft.trim();
                 if (text.isEmpty) return;
                 await store.addComment(video.id, text);
                 if (sheetContext.mounted) Navigator.pop(sheetContext);
@@ -96,7 +98,7 @@ class _VideosPageState extends State<VideosPage> {
             ]),
           ]))),
       ),
-    ).whenComplete(controller.dispose);
+    );
   }
 }
 
