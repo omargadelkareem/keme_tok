@@ -114,15 +114,17 @@ class _ReelSlide extends StatefulWidget {
 
 class _ReelSlideState extends State<_ReelSlide> {
   late final VideoPlayerController player;
-  bool ready = false, failed = false;
+  bool ready = false, failed = false, started = false;
   String? failureDetails;
   @override
   void initState() {
     super.initState();
     player = VideoPlayerController.file(File(widget.video.path));
-    initialize();
+    if (widget.active) initialize();
   }
   Future<void> initialize() async {
+    if (started) return;
+    started = true;
     try {
       await player.initialize();
       if (!mounted) return;
@@ -147,7 +149,10 @@ class _ReelSlideState extends State<_ReelSlide> {
   @override
   void didUpdateWidget(covariant _ReelSlide oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.active != widget.active) sync();
+    if (oldWidget.active != widget.active) {
+      if (widget.active && !started) initialize();
+      sync();
+    }
   }
   @override
   void dispose() { player.dispose(); super.dispose(); }
