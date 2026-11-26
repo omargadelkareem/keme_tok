@@ -5,6 +5,8 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/services/session_service.dart';
 import '../../../videos/data/local_video_store.dart';
 import '../../data/creator_store.dart';
+import '../../data/local_profile_store.dart';
+import 'edit_profile_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key, this.creator, this.onLogout});
@@ -23,12 +25,14 @@ class _ProfilePageState extends State<ProfilePage> {
     super.initState();
     creators.addListener(refresh);
     videos.addListener(refresh);
+    LocalProfileStore.instance.addListener(refresh);
   }
   void refresh() { if (mounted) setState(() {}); }
   @override
   void dispose() {
     creators.removeListener(refresh);
     videos.removeListener(refresh);
+    LocalProfileStore.instance.removeListener(refresh);
     super.dispose();
   }
 
@@ -36,13 +40,14 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     final creator = widget.creator;
     final mine = videos.videos;
+    final profile = LocalProfileStore.instance;
     final color = creator == null ? AppColors.pink : Color(creator.color);
     final followed = creator != null && creators.isFollowing(creator.id);
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: !own,
         centerTitle: true,
-        title: Text(creator?.handle ?? '@me', style: const TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(creator?.handle ?? profile.name, style: const TextStyle(fontWeight: FontWeight.bold)),
         actions: [
           if (own) IconButton(onPressed: widget.onLogout,
             icon: const Icon(Icons.logout_outlined), tooltip: 'تسجيل الخروج'),
@@ -55,10 +60,13 @@ class _ProfilePageState extends State<ProfilePage> {
         SliverToBoxAdapter(child: Column(children: [
           const SizedBox(height: 18),
           CircleAvatar(radius: 47, backgroundColor: color.withOpacity(.18),
-            child: Text(creator?.name.substring(0, 1).toUpperCase() ?? 'K',
+            backgroundImage: own && profile.photo != null && File(profile.photo!).existsSync()
+              ? FileImage(File(profile.photo!)) : null,
+            child: own && profile.photo != null ? null : Text(
+              creator?.name.substring(0, 1).toUpperCase() ?? profile.name.substring(0, 1).toUpperCase(),
               style: TextStyle(fontSize: 43, fontWeight: FontWeight.bold, color: color))),
           const SizedBox(height: 14),
-          Text(creator?.name ?? 'Keme Creator',
+          Text(creator?.name ?? profile.name,
             style: const TextStyle(fontSize: 23, fontWeight: FontWeight.w800)),
           const SizedBox(height: 4),
           if (own) FutureBuilder<String?>(
@@ -75,15 +83,15 @@ class _ProfilePageState extends State<ProfilePage> {
           ]),
           const SizedBox(height: 20),
           Padding(padding: const EdgeInsets.symmetric(horizontal: 22),
-            child: Text(creator?.bio ?? 'أهلاً بيكم في صفحتي على Keme Tok ✨',
+            child: Text(creator?.bio ?? profile.bio,
               textAlign: TextAlign.center)),
           const SizedBox(height: 20),
           Padding(padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Row(children: [
               Expanded(child: FilledButton(
                 onPressed: own
-                  ? () => ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('تعديل بيانات الحساب بعد الربط الحقيقي')))
+                  ? () => Navigator.of(context).push(MaterialPageRoute<void>(
+                      builder: (_) => const EditProfilePage()))
                   : () { if (creator != null) creators.toggle(creator.id); },
                 style: FilledButton.styleFrom(
                   backgroundColor: followed ? AppColors.surface : AppColors.pink,
