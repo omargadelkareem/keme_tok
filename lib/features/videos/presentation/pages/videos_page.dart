@@ -20,7 +20,7 @@ class _VideosPageState extends State<VideosPage> {
       'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
       '@keme.creator', 'أول فيديو على Keme Tok ✨', '12.4K'),
     _DemoVideo(
-      'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
+      'https://flutter.github.io/assets-for-api-docs/assets/videos/butterfly.mp4',
       '@keme.studio', 'لحظات جديدة كل يوم 🎬', '8.1K'),
   ];
 
