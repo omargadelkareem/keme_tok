@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/services/session_service.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/brand_logo.dart';
 import '../../auth/presentation/pages/login_page.dart';
 import '../../home/presentation/pages/home_page.dart';
 
@@ -35,7 +36,7 @@ class _SplashScreenState extends State<SplashScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('K', style: TextStyle(fontSize: 110, fontWeight: FontWeight.w900, color: AppColors.pink)),
+          BrandLogo(size: 138, borderRadius: 32),
           SizedBox(height: 8),
           Text('Keme Tok', style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
           SizedBox(height: 12),
