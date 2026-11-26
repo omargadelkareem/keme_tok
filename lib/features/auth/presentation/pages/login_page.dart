@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/services/session_service.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/brand_logo.dart';
 import '../../../home/presentation/pages/home_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -51,7 +52,7 @@ class _LoginPageState extends State<LoginPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Center(child: Text('K', style: TextStyle(fontSize: 92, fontWeight: FontWeight.w900, color: AppColors.pink))),
+                const Center(child: BrandLogo(size: 118, borderRadius: 26)),
                 const SizedBox(height: 16),
                 const Text('أهلاً بيك في Keme Tok', textAlign: TextAlign.center, style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
