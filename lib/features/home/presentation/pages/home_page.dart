@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/services/session_service.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/brand_logo.dart';
 import '../../../auth/presentation/pages/login_page.dart';
 import '../../../videos/presentation/pages/videos_page.dart';
 import '../../../live/presentation/pages/live_list_page.dart';
@@ -102,6 +103,8 @@ class _HomePageState extends State<HomePage> {
               padding: const EdgeInsets.fromLTRB(20, 18, 20, 12),
               child: Row(
                 children: [
+                  const BrandLogo(size: 42, borderRadius: 10),
+                  const SizedBox(width: 10),
                   const Expanded(
                     child: Text.rich(
                       TextSpan(children: [
