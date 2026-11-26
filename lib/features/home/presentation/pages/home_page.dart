@@ -7,7 +7,8 @@ import '../../../live/presentation/pages/live_list_page.dart';
 import '../../../live/presentation/pages/live_room_page.dart';
 import '../../../live/presentation/pages/create_live_page.dart';
 import '../../../videos/presentation/pages/upload_video_page.dart';
-import '../../../videos/data/local_video_store.dart';
+import '../../../profile/data/creator_store.dart';
+import '../../../profile/presentation/pages/profile_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -46,7 +47,7 @@ class _HomePageState extends State<HomePage> {
               VideosPage(isActive: _selectedIndex == 1),
               const LiveListPage(),
               _createSection(),
-              _profileSection(),
+              ProfilePage(onLogout: _logout),
             ],
           ),
         ),
@@ -188,7 +189,7 @@ class _HomePageState extends State<HomePage> {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 14),
-              child: _sectionHeader('مبدعين يستاهلوا المتابعة', 'اكتشف', () => _showComingSoon('المبدعين')),
+              child: _sectionHeader('مبدعين يستاهلوا المتابعة', 'اكتشف', _showCreators),
             ),
           ),
           SliverToBoxAdapter(
@@ -310,27 +311,54 @@ class _HomePageState extends State<HomePage> {
         ),
       );
 
-  Widget _creator(String name, String handle, Color color) => Container(
-        width: 116,
-        margin: const EdgeInsets.only(right: 12),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(18)),
-        child: Column(
-          children: [
-            CircleAvatar(
-              radius: 26,
-              backgroundColor: color.withOpacity(.20),
-              child: Text(name.substring(0, 1),
-                  style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 24)),
-            ),
-            const SizedBox(height: 9),
-            Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 3),
-            Text(handle, maxLines: 1, overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 10, color: AppColors.textSecondary)),
-          ],
+  void _openCreator(Creator creator) {
+    Navigator.of(context).push(MaterialPageRoute<void>(
+      builder: (_) => ProfilePage(creator: creator)));
+  }
+
+  void _showCreators() {
+    Navigator.of(context).push(MaterialPageRoute<void>(
+      builder: (_) => Scaffold(
+        appBar: AppBar(title: const Text('اكتشف المبدعين')),
+        body: ListView.builder(
+          itemCount: CreatorStore.creators.length,
+          itemBuilder: (context, index) {
+            final creator = CreatorStore.creators[index];
+            return ListTile(
+              leading: CircleAvatar(backgroundColor: Color(creator.color).withOpacity(.2),
+                child: Text(creator.name[0], style: TextStyle(color: Color(creator.color)))),
+              title: Text(creator.name), subtitle: Text(creator.handle),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => _openCreator(creator),
+            );
+          },
         ),
-      );
+      )));
+  }
+
+  Widget _creator(String name, String handle, Color color) {
+    final creator = CreatorStore.creators.firstWhere((c) => c.handle == handle);
+    return InkWell(
+      onTap: () => _openCreator(creator),
+      borderRadius: BorderRadius.circular(18),
+      child: Container(
+        width: 116, margin: const EdgeInsets.only(right: 12),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(color: AppColors.surface,
+          borderRadius: BorderRadius.circular(18)),
+        child: Column(children: [
+          CircleAvatar(radius: 26, backgroundColor: color.withOpacity(.20),
+            child: Text(name[0], style: TextStyle(color: color,
+              fontWeight: FontWeight.bold, fontSize: 24))),
+          const SizedBox(height: 9),
+          Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 3),
+          Text(handle, maxLines: 1, overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 10, color: AppColors.textSecondary)),
+        ]),
+      ),
+    );
+  }
 
   Widget _emptySection(IconData icon, String title, String subtitle) => Center(
         child: Padding(
@@ -371,57 +399,6 @@ class _HomePageState extends State<HomePage> {
       const SizedBox(height: 10),
       const SizedBox(height: 520, child: CreateLivePage()),
     ],
-  );
-
-  Widget _profileSection() => AnimatedBuilder(
-    animation: LocalVideoStore.instance,
-    builder: (context, _) {
-      final videos = LocalVideoStore.instance.videos;
-      return ListView(padding: const EdgeInsets.all(20), children: [
-        const SizedBox(height: 14),
-        const Center(child: CircleAvatar(radius: 42,
-          backgroundColor: AppColors.surface,
-          child: Icon(Icons.person, color: AppColors.cyan, size: 45))),
-        const SizedBox(height: 12),
-        const Center(child: Text('حسابي', style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold))),
-        FutureBuilder<String?>(
-          future: SessionService.getPhone(),
-          builder: (context, snapshot) => Center(child: Text(snapshot.data ?? '',
-            style: const TextStyle(color: AppColors.textSecondary))),
-        ),
-        const SizedBox(height: 20),
-        Center(child: Text('فيديوهاتي: ${videos.length}',
-          style: const TextStyle(fontWeight: FontWeight.bold))),
-        const SizedBox(height: 18),
-        if (videos.isEmpty) const Center(child: Text('لسه ما نشرتش فيديوهات')),
-        for (final video in videos)
-          Card(child: ListTile(
-            leading: const Icon(Icons.play_circle, color: AppColors.pink, size: 36),
-            title: Text(video.caption.isEmpty ? 'فيديو بدون وصف' : video.caption,
-              maxLines: 1, overflow: TextOverflow.ellipsis),
-            subtitle: Text('❤️ ${video.likes}    💬 ${video.comments.length}'),
-            onTap: () => setState(() => _selectedIndex = 1),
-            trailing: IconButton(icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
-              onPressed: () async {
-                final confirmed = await showDialog<bool>(context: context,
-                  builder: (dialogContext) => AlertDialog(
-                    title: const Text('حذف الفيديو؟'),
-                    content: const Text('هيتم حذف الفيديو من مساحة التطبيق نهائيًا.'),
-                    actions: [
-                      TextButton(onPressed: () => Navigator.pop(dialogContext, false),
-                        child: const Text('إلغاء')),
-                      TextButton(onPressed: () => Navigator.pop(dialogContext, true),
-                        child: const Text('حذف')),
-                    ],
-                  ));
-                if (confirmed == true) await LocalVideoStore.instance.delete(video.id);
-              }),
-          )),
-        const SizedBox(height: 20),
-        OutlinedButton.icon(onPressed: _logout,
-          icon: const Icon(Icons.logout), label: const Text('تسجيل الخروج')),
-      ]);
-    },
   );
 
   void _showComingSoon(String title) {
